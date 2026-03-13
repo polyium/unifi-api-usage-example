@@ -1,0 +1,17 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/runtime-configuration.schema.json",
+    "title": "Runtime Configuration",
+    "type": "object",
+    "properties": {
+        "api-key": {
+            "type": [
+                "string"
+            ],
+            "description": "The api key. Ensure that the type of key is for ***application*** usage - this key cannot be a site-manager or protect api key."
+        }
+    },
+    "required": [
+        "api-key"
+    ]
+}

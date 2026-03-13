@@ -1,0 +1,4 @@
+tests
+coverage
+jest.config.*
+**/*.test.*

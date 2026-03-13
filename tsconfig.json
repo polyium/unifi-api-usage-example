@@ -1,0 +1,61 @@
+{
+    "buildOptions": {
+        "assumeChangesOnlyAffectDirectDependencies": false,
+        "incremental": true,
+        "force": true,
+        "verbose": true
+    },
+    // Visit https://aka.ms/tsconfig to read more about this file
+    "compilerOptions": {
+        // File Layout
+        // "rootDir": "./src",
+        "outDir": "./distribution",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        // Environment Settings
+        // See also https://aka.ms/tsconfig/module
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
+        "target": "ES2018",
+        // For nodejs:
+        "lib": [
+            "ESNext"
+        ],
+        "resolveJsonModule": true,
+        "resolvePackageJsonExports": true,
+        "resolvePackageJsonImports": true,
+        "esModuleInterop": true,
+        // Other Outputs
+        "sourceMap": true,
+        "inlineSources": true,
+        "inlineSourceMap": false,
+        "declaration": true,
+        "declarationMap": true,
+        "isolatedDeclarations": false,
+        // Stricter Typechecking Options
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        // Style Options
+        // "noImplicitReturns": true,
+        // "noImplicitOverride": true,
+        // "noUnusedLocals": true,
+        // "noUnusedParameters": true,
+        // "noFallthroughCasesInSwitch": true,
+        "noPropertyAccessFromIndexSignature": false,
+        "extendedDiagnostics": true,
+        "disableSizeLimit": true,
+        "downlevelIteration": true,
+        // Recommended Options
+        "strict": true,
+        "isolatedModules": true,
+        "forceConsistentCasingInFileNames": true,
+        "noUncheckedSideEffectImports": true,
+        "moduleDetection": "auto",
+        "skipLibCheck": true
+    },
+    "include": [
+        "**/*.ts",
+        "runtime.json",
+        "assets/local-dx.2026-01-23.private-key.pem"
+    ]
+}

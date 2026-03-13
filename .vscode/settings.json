@@ -1,0 +1,11 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/runtime.json",
+                "**/runtime.json"
+            ],
+            "url": "./runtime.schema.json"
+        }
+    ]
+}

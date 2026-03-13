@@ -1,0 +1,36 @@
+{
+    "name": "@example/unifi-api-usage-example",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "lint": "eslint . --ext .ts",
+        "fix": "eslint . --ext .ts --fix",
+        "test": "jest --passWithNoTests --all --updateSnapshot",
+        "pretest": "npm run build",
+        "prebuild": "echo \"no-operation\"",
+        "build": "tsc --build .",
+        "preinstall": "npm run build",
+        "postinstall": "npm link --ignore-scripts .",
+        "generate-secret": "python -c \"import secrets; print(secrets.token_urlsafe(32))\"",
+        "prestart": "npm install .",
+        "start": "node distribution"
+    },
+    "devDependencies": {
+        "@jest/globals": "^30.2.0",
+        "@jest/types": "^30.2.0",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^25.0.10",
+        "jest": "^30.2.0",
+        "smee-client": "^5.0.0",
+        "ts-jest": "^29.4.6",
+        "typescript": "^5.9.3"
+    },
+    "types": "distribution",
+    "main": "./distribution/index.js",
+    "exports": "./distribution",
+    "dependencies": {},
+    "bin": {
+        "unifi-api-usage-example": "./distribution/index.js"
+    }
+}
