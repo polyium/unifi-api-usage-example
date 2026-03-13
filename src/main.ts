@@ -7,31 +7,21 @@ import * as Utilities from "node:util";
 import * as Runtime from "../runtime.json" with {type: "json"};
 
 const configuration: typeof Runtime.default = Runtime.default;
-const UNIFI_HOST = "unifi";
-const UNIFI_PORT = 443;
-const SITES_PATHNAME = "/proxy/network/integration/v1/sites";
-
-type HTTPResponse = {
-    body: string,
-    headers: IncomingHttpHeaders,
-    statusCode: number,
-    statusMessage: string,
-};
-
-namespace Inputs {
-    export namespace Request {
-        export interface Context {
-            agent?: HTTPS.Agent | undefined;
-            body?: string
-            headers: Record<string, string>;
-            servername?: string | undefined;
-            url: URL;
-            method: string;
-        }
-    }
-}
 
 namespace Sites {
+    const hostname: string = "unifi";
+    const pathname: string = "/proxy/network/integration/v1/sites";
+    
+    export const url = new URL(Utilities.format("https://%s%s", hostname, pathname));
+    
+    url.searchParams.set("offset", Utilities.format("%d", 0));
+    url.searchParams.set("limit", Utilities.format("%d", 0));
+    url.searchParams.set("filter", Utilities.format("%s", ""));
+    
+    // url.searchParams.set("offset", "{offset}");
+    // url.searchParams.set("limit", "{limit}");
+    // url.searchParams.set("filter", "{filter}");
+    
     export interface Status {
         message?: string | undefined;
         code?: number | undefined;
@@ -51,24 +41,7 @@ namespace Sites {
         url: URL;
         method: string;
     }
-    
-    function url(hostname: string = "unifi", pathname: string = "/proxy/network/integration/v1/sites"): URL {
-        const url = new URL(Utilities.format("https://%s/%s", hostname, pathname));
-        
-        url.searchParams.set("offset", Utilities.format("%d", 0));
-        url.searchParams.set("limit", Utilities.format("%d", 0));
-        url.searchParams.set("filter", "");
-        
-        return url;
-    }
-    
-    function headers(token: string): Record<string, string> {
-        return {
-            "Accept": "application/json",
-            "X-API-Key": token,
-        };
-    }
-    
+   
     function request(ctx: Input): Promise<Response> {
         return new Promise((resolve, reject) => {
             const options: HTTPS.RequestOptions = {
@@ -80,8 +53,13 @@ namespace Sites {
                 protocol: ctx.url.protocol,
             };
             
-            ctx.agent ??= ctx.agent;
-            ctx.servername ??= ctx.servername;
+            if (ctx.agent !== undefined) {
+                options.agent = ctx.agent;
+            }
+            
+            if (ctx.servername !== undefined) {
+                options.servername = ctx.servername;
+            }
             
             // The transient http(s) client-request and the transient http(s) server-response.
             const request = HTTPS.request(options, (response) => {
@@ -122,8 +100,11 @@ namespace Sites {
 
     async function get(token: string): Promise<Response> {
         const context: Input = {
-            headers: headers(token),
-            url: url(),
+            url: url,
+            headers: {
+                "Accept": "application/json",
+                "X-API-Key": token,
+            },
             method: "GET",
         };
         
@@ -131,10 +112,14 @@ namespace Sites {
             return await request(context);
         } catch (error: Error | unknown) {
             if (error instanceof Error) {
-                const details = Utilities.inspect(error.cause)
+                const code: string = typeof (error as NodeJS.ErrnoException).code === "string"
+                    ? (error as NodeJS.ErrnoException).code ?? ""
+                    : ""
+                
+                const details = Utilities.format("%s %s", error.message, Utilities.inspect(error.cause));
                 
                 // For self-signed certificate-related errors, handle and continue execution.
-                if (details.includes("self-signed certificate")) {
+                if (Certificate.Exceptions.includes(code)) {
                     const trust = await Certificate.resolve(context.url.hostname);
                     
                     return request({
@@ -163,21 +148,23 @@ namespace Sites {
         response.status.code ??= -1;
         
         if (response.status?.code < 200 || response.status?.code >= 300) {
-            console.error("UniFi API request failed.");
-            console.error(Utilities.inspect(response, {depth: null}));
+            switch (response.status?.code) {
+                case 401:
+                    console.error("Unable to authenticate against the UniFi API.", Utilities.inspect({response, url, token, message: response.status?.message }, {depth: null, colors: true}));
+            }
             
-            process.exit(1);
+            process.exit(0);
         }
         
         if (!(response.body)) {
-            console.error("Unexpectedly received an empty API response body from the UniFi API.", { url: url(), response });
+            console.error("Unexpectedly received an empty API response body from the UniFi API.", { url, response });
             
             process.exit(1);
         }
         
         const data = JSON.parse(response.body);
         if (typeof data !== "object" || data === null) {
-            console.error("Unexpectedly received an invalid API response body from the UniFi API.", { url: url(), response });
+            console.error("Unexpectedly received an invalid API response body from the UniFi API.", { url, response });
             
             process.exit(1);
         }
@@ -207,7 +194,7 @@ emitter.on("setup", () => {
 });
 
 /**
- * Retrieves the unique DNS names from the given array of strings.
+ * Retrieves the unique values from the given array of strings.
  *
  * @param {Array<string | null | undefined>} values
  * @returns {string[]}
@@ -233,6 +220,30 @@ function unique(values: Array<string | null | undefined>): string[] {
 }
 
 namespace Certificate {
+    enum Exception {
+        zero = "DEPTH_ZERO_SELF_SIGNED_CERT",
+        invalid = "ERR_TLS_CERT_ALTNAME_INVALID",
+        selfsigned = "SELF_SIGNED_CERT_IN_CHAIN",
+        local = "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        verify = "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    }
+    
+    export const Exceptions = {
+        elements: [
+            Exception.zero,
+            Exception.invalid,
+            Exception.selfsigned,
+            Exception.local,
+            Exception.verify,
+        ],
+        includes: (code: string): boolean => {
+            const nominal = Exceptions.elements.includes(code as Exception)
+            const fallback = Exceptions.elements.includes(code as Exception)
+            
+            return nominal || fallback;
+        },
+    }
+    
     /**
      * Resolves the certificate's DNS names from the given peer certificate.
      *
@@ -325,7 +336,7 @@ namespace Certificate {
         return new Promise((resolve, reject) => {
             const socket = TLS.connect({
                 host: hostname,
-                port: UNIFI_PORT,
+                port: 443,
                 rejectUnauthorized: false,
                 servername: hostname,
             });
