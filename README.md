@@ -66,6 +66,23 @@ npm install
 npm start
 ```
 
+### 5. Optionally run the linked CLI directly
+
+This package also publishes a CLI named `unifi-api-usage-example` in `package.json`.
+During `npm install`, the `postinstall` hook runs `npm link --ignore-scripts .`, so a successful install can also expose the example as a direct shell command:
+
+```bash
+unifi-api-usage-example
+```
+
+This uses the same repository checkout, `runtime.json`, and compiled `distribution/` output as `npm start`.
+
+Notes:
+
+- This assumes your npm-linked executable path is configured correctly in your shell environment
+- Because the linked executable points back to this checkout, keep the repository at the same path or rerun `npm install` after moving it
+- In shell setups that append `${PWD}/node_modules/.bin` or the git root's `node_modules/.bin` to `PATH` when you `cd` into the repository, other project-local npm binaries in this checkout will also be callable directly
+
 ## Example Request
 
 The current implementation sends a request equivalent to:
@@ -123,6 +140,10 @@ This makes the example more useful in lab, home, and internal-network environmen
 ### `npm install` fails because `runtime.json` is missing
 
 Create `runtime.json` before running `npm install`.
+
+### `unifi-api-usage-example` is not found
+
+Make sure `npm install` completed successfully, your npm-linked executable directory is on `PATH`, and rerun `npm install` if the repository was moved after it was linked.
 
 ### The request fails with `ENOTFOUND unifi`
 
