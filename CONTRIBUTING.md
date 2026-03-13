@@ -1,8 +1,8 @@
 ## Contributing
 
-[fork]: https://github.com/github/github-app-js-sample/fork
+[fork]: https://github.com/polyium/unifi-api-usage-example/fork
 
-[pr]: https://github.com/github/github-app-js-sample/compare
+[pr]: https://github.com/polyium/unifi-api-usage-example/compare
 
 [style]: https://standardjs.com/rules.html
 
