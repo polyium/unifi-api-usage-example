@@ -1,5 +1,5 @@
 {
-    "name": "@example/unifi-api-usage-example",
+    "name": "unifi-api-usage-example",
     "private": true,
     "version": "0.0.0",
     "type": "module",

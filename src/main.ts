@@ -1,5 +1,5 @@
 import * as Events from "node:events";
-import type { IncomingHttpHeaders } from "node:http";
+import type {IncomingHttpHeaders} from "node:http";
 import * as HTTPS from "node:https";
 import * as TLS from "node:tls";
 import * as Utilities from "node:util";
@@ -41,7 +41,7 @@ namespace Sites {
         url: URL;
         method: string;
     }
-   
+    
     function request(ctx: Input): Promise<Response> {
         return new Promise((resolve, reject) => {
             const options: HTTPS.RequestOptions = {
@@ -74,9 +74,9 @@ namespace Sites {
                 response.once("end", () => {
                     const body = chunks.join("");
                     
-                    const { headers } = response;
+                    const {headers} = response;
                     
-                    const { statusCode: code, statusMessage: message} = response;
+                    const {statusCode: code, statusMessage: message} = response;
                     
                     const status: Status = {
                         message, code
@@ -97,7 +97,7 @@ namespace Sites {
             request.end();
         });
     }
-
+    
     async function get(token: string): Promise<Response> {
         const context: Input = {
             url: url,
@@ -129,12 +129,12 @@ namespace Sites {
                     });
                 }
                 
-                console.error("A fatal, unhandled error has occurred while calling the sites api endpoint.", { error: Utilities.inspect({error}) });
+                console.error("A fatal, unhandled error has occurred while calling the sites api endpoint.", {error: Utilities.inspect({error})});
                 
                 process.exit(1);
             }
             
-            console.error("Unknown error of an unknown type has occurred while calling the sites api endpoint.", { error: Utilities.inspect({error}) });
+            console.error("Unknown error of an unknown type has occurred while calling the sites api endpoint.", {error: Utilities.inspect({error})});
             
             process.exit(1);
         }
@@ -150,21 +150,26 @@ namespace Sites {
         if (response.status?.code < 200 || response.status?.code >= 300) {
             switch (response.status?.code) {
                 case 401:
-                    console.error("Unable to authenticate against the UniFi API.", Utilities.inspect({response, url, token, message: response.status?.message }, {depth: null, colors: true}));
+                    console.error("Unable to authenticate against the UniFi API.", Utilities.inspect({
+                        response,
+                        url,
+                        token,
+                        message: response.status?.message
+                    }, {depth: null, colors: true}));
             }
             
             process.exit(0);
         }
         
         if (!(response.body)) {
-            console.error("Unexpectedly received an empty API response body from the UniFi API.", { url, response });
+            console.error("Unexpectedly received an empty API response body from the UniFi API.", {url, response});
             
             process.exit(1);
         }
         
         const data = JSON.parse(response.body);
         if (typeof data !== "object" || data === null) {
-            console.error("Unexpectedly received an invalid API response body from the UniFi API.", { url, response });
+            console.error("Unexpectedly received an invalid API response body from the UniFi API.", {url, response});
             
             process.exit(1);
         }
@@ -172,7 +177,6 @@ namespace Sites {
         console.log({data});
     }
 }
-
 
 /**
  * EventEmitter instance responsible for orchestrating application lifecycle events.
@@ -182,9 +186,9 @@ const emitter = new Events.EventEmitter();
 emitter.on("signal-handler", () => {
     process.once("SIGINT", () => {
         process.stdout.write("\r\n");
-
+        
         console.log("Received SIGINT (Ctrl+C). Performing graceful cancellation ...");
-
+        
         process.exit(0);
     });
 });
@@ -382,7 +386,7 @@ namespace Certificate {
  */
 async function main() {
     emitter.emit("setup");
-
+    
     await Sites.constructor();
 }
 
