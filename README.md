@@ -4,14 +4,6 @@ This repository is a small TypeScript CLI that demonstrates how to call the UniF
 
 The current example sends a `GET` request to the `sites` endpoint, handles common self-signed certificate problems, and prints the parsed JSON response to stdout.
 
-## What This Example Does
-
-- Loads an API key from `runtime.json`
-- Calls `https://unifi/proxy/network/integration/v1/sites`
-- Sends `Accept: application/json` and `X-API-Key` headers
-- Retries with a certificate-aware `https.Agent` when the UniFi endpoint uses a self-signed or locally issued certificate
-- Prints the response as parsed JSON
-
 ## Prerequisites
 
 - A recent version of Node.js and npm
